@@ -5,10 +5,13 @@ using namespace std;
 
 const int sampleRate = 44100;
 
+/* Bit depth */
+const int bitDepth = 16;
+
 /* Write sine wave osc */
 class SineOscillator
 {
-   mutable float frequency,amplitude, angle = 0.0f, offset = 0.0;
+    mutable float frequency, amplitude, angle = 0.0f, offset = 0.0;
 
 public:
     SineOscillator(float freq, float amp) : frequency(freq), amplitude(amp)
@@ -35,14 +38,15 @@ int main()
 {
     int duration = 2;
     ofstream audioFile;
-    audioFile.open("waveform");
+    audioFile.open("waveform", ios::binary);
     SineOscillator sineOscillator(440, 0.5);
+    float maxAmplitude = pow(2, bitDepth - 1) - 1;
     for (int i = 0; i < sampleRate * duration; i++)
     {
-        audioFile << sineOscillator.process() << endl;
+        float sample = sineOscillator.process();
+        int intSample = static_cast<int>(sample * maxAmplitude);
+        audioFile.write(reinterpret_cast<char *>(&intSample), 2);
     }
     audioFile.close();
-    cout << sizeof(float) << endl;
-    cout << sizeof(int) << endl;
     return 0;
 }
